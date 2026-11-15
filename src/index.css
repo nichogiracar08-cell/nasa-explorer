@@ -1,0 +1,50 @@
+:root {
+  --bg: #050816;
+  --bg-soft: #0c1229;
+  --surface: #121a38;
+  --surface-light: #1b2550;
+  --border: #2a3566;
+  --text: #e8ecff;
+  --text-muted: #9aa5d1;
+  --accent: #4f8cff;
+  --accent-strong: #2f6bff;
+  --red: #fc3d21;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+  color: var(--text);
+  background-color: var(--bg);
+  /* Estrellas hechas con degradados radiales */
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, #ffffff, transparent),
+    radial-gradient(1px 1px at 90px 120px, #cfd8ff, transparent),
+    radial-gradient(1.5px 1.5px at 160px 60px, #ffffff, transparent),
+    radial-gradient(1px 1px at 230px 170px, #b9c6ff, transparent),
+    radial-gradient(1px 1px at 60px 210px, #ffffff, transparent),
+    radial-gradient(ellipse at top, #16205a 0%, transparent 60%);
+  background-size:
+    260px 260px, 260px 260px, 260px 260px, 260px 260px, 260px 260px,
+    100% 700px;
+  background-repeat: repeat, repeat, repeat, repeat, repeat, no-repeat;
+  background-attachment: fixed;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+  font-size: 1rem;
+}
