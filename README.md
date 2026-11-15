@@ -1,6 +1,6 @@
 # NASA Explorer 🚀
 
-**Nombre del estudiante:** Nicolás Giraldo
+**Nombre del estudiante:** Nicholas Giraldo
 
 **API asignada:** NASA API – imágenes e información espacial (https://api.nasa.gov/)
 
