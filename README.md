@@ -58,7 +58,7 @@ De cada elemento de `collection.items` se usa:
 - Ordenar resultados (relevancia, más recientes, más antiguas, título A-Z).
 - Contador de resultados (mostrados y total en la API).
 - Botón para limpiar filtros.
-- Estado de carga y mensaje de error con botón de reintentar.
+- Estado de carga y mensaje de error si la API no responde.
 
 ## Cómo ejecutar el proyecto
 

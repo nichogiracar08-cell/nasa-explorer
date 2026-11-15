@@ -8,11 +8,10 @@ import Loader from './components/Loader.jsx'
 import Footer from './components/Footer.jsx'
 import './App.css'
 
-// API asignada: NASA (https://api.nasa.gov/) -> NASA Image and Video Library
+// API de la NASA (NASA Image and Video Library)
 const API_URL = 'https://images-api.nasa.gov/search'
-const DEFAULT_QUERY = 'galaxy'
 
-// Categorías: solo son términos de búsqueda que se envían a la API.
+// Las categorías son palabras que se le mandan a la API como búsqueda
 const CATEGORIES = [
   { label: 'Galaxias', query: 'galaxy' },
   { label: 'Nebulosas', query: 'nebula' },
@@ -24,80 +23,64 @@ const CATEGORIES = [
   { label: 'Hubble', query: 'hubble' },
 ]
 
-// Convierte cada elemento de la respuesta en un objeto más cómodo para las props.
-function formatItem(item) {
-  const info = item.data?.[0] ?? {}
-  const links = item.links ?? []
-  const image =
-    links.find((link) => link.rel === 'preview') ??
-    links.find((link) => link.render === 'image')
-
-  return {
-    id: info.nasa_id,
-    title: info.title,
-    description: info.description,
-    date: info.date_created,
-    center: info.center,
-    creator: info.photographer ?? info.secondary_creator,
-    keywords: info.keywords ?? [],
-    image: image?.href,
-  }
-}
-
 function App() {
-  const [items, setItems] = useState([])
-  const [totalHits, setTotalHits] = useState(0)
+  const [items, setItems] = useState([]) // imágenes que devuelve la API
+  const [total, setTotal] = useState(0) // total de resultados que tiene la API
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [query, setQuery] = useState(DEFAULT_QUERY)
+  const [error, setError] = useState('')
+  const [query, setQuery] = useState('galaxy') // lo que se está buscando
   const [sortOrder, setSortOrder] = useState('relevance')
-  const [retry, setRetry] = useState(0)
 
-  // Petición a la API: se ejecuta al cargar y cada vez que cambia la búsqueda.
+  // Trae los datos de la API. Se ejecuta al abrir la página
+  // y otra vez cada que cambia la búsqueda (query).
   useEffect(() => {
-    const controller = new AbortController()
-    setLoading(true)
-    setError(null)
+    async function loadImages() {
+      setLoading(true)
+      setError('')
 
-    const url = `${API_URL}?q=${encodeURIComponent(query)}&media_type=image&page_size=24`
+      try {
+        const response = await fetch(
+          API_URL + '?q=' + query + '&media_type=image&page_size=24'
+        )
+        const data = await response.json()
 
-    fetch(url, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`La API respondió con el código ${response.status}`)
-        }
-        return response.json()
-      })
-      .then((data) => {
-        const results = data.collection.items
-          .map(formatItem)
-          .filter((item) => item.id && item.image)
-        setItems(results)
-        setTotalHits(data.collection.metadata?.total_hits ?? results.length)
-        setLoading(false)
-      })
-      .catch((err) => {
-        if (err.name === 'AbortError') return
-        setError(err.message)
+        // algunos resultados llegan sin imagen, esos no se muestran
+        const withImage = data.collection.items.filter((item) => item.links)
+
+        setItems(withImage)
+        setTotal(data.collection.metadata.total_hits)
+      } catch (err) {
+        setError('No se pudo cargar la información de la NASA.')
         setItems([])
-        setLoading(false)
-      })
+      }
 
-    return () => controller.abort()
-  }, [query, retry])
+      setLoading(false)
+    }
 
-  // Ordenar resultados (sin modificar el estado original).
-  const sortedItems = [...items].sort((a, b) => {
-    if (sortOrder === 'newest') return new Date(b.date) - new Date(a.date)
-    if (sortOrder === 'oldest') return new Date(a.date) - new Date(b.date)
-    if (sortOrder === 'title') return a.title.localeCompare(b.title)
-    return 0
-  })
+    loadImages()
+  }, [query])
 
-  const hasFilters = query !== DEFAULT_QUERY || sortOrder !== 'relevance'
+  // Se ordena una copia para no modificar el estado directamente
+  const sortedItems = [...items]
+
+  if (sortOrder === 'newest') {
+    sortedItems.sort(
+      (a, b) => new Date(b.data[0].date_created) - new Date(a.data[0].date_created)
+    )
+  }
+  if (sortOrder === 'oldest') {
+    sortedItems.sort(
+      (a, b) => new Date(a.data[0].date_created) - new Date(b.data[0].date_created)
+    )
+  }
+  if (sortOrder === 'title') {
+    sortedItems.sort((a, b) => a.data[0].title.localeCompare(b.data[0].title))
+  }
+
+  const hasFilters = query !== 'galaxy' || sortOrder !== 'relevance'
 
   function clearFilters() {
-    setQuery(DEFAULT_QUERY)
+    setQuery('galaxy')
     setSortOrder('relevance')
   }
 
@@ -118,7 +101,7 @@ function App() {
         <Toolbar
           query={query}
           shown={sortedItems.length}
-          total={totalHits}
+          total={total}
           loading={loading}
           sortOrder={sortOrder}
           onSortChange={setSortOrder}
@@ -128,17 +111,14 @@ function App() {
 
         {loading && <Loader />}
 
-        {!loading && error && (
+        {!loading && error !== '' && (
           <div className="message message-error">
-            <p>No se pudo cargar la información de la NASA.</p>
-            <p className="message-detail">{error}</p>
-            <button className="btn" onClick={() => setRetry(retry + 1)}>
-              Reintentar
-            </button>
+            <p>{error}</p>
+            <p className="message-detail">Revisa tu conexión e intenta de nuevo.</p>
           </div>
         )}
 
-        {!loading && !error && sortedItems.length === 0 && (
+        {!loading && error === '' && sortedItems.length === 0 && (
           <div className="message">
             <p>No se encontraron imágenes para “{query}”.</p>
             <button className="btn" onClick={clearFilters}>
@@ -147,9 +127,7 @@ function App() {
           </div>
         )}
 
-        {!loading && !error && sortedItems.length > 0 && (
-          <Gallery items={sortedItems} />
-        )}
+        {!loading && sortedItems.length > 0 && <Gallery items={sortedItems} />}
       </main>
 
       <Footer />
