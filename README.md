@@ -21,15 +21,12 @@ NASA Explorer es una galería espacial hecha con React + Vite. Consume en tiempo
 **Componentes desarrollados:**
 
 ```text
-App
+App                 → hace la petición a la API y recorre los datos con .map()
 │
 ├── Header          → título y presentación de la aplicación
-├── SearchBar       → formulario de búsqueda
-├── CategoryFilter  → botones de categorías (Galaxias, Marte, Luna...)
+├── SearchBar       → buscador y botones de categorías (Galaxias, Marte, Luna...)
 ├── Toolbar         → contador de resultados, ordenamiento y limpiar filtros
-├── Loader          → indicador de carga
-├── Gallery         → recorre los datos con .map() y crea las tarjetas
-│   └── ImageCard   → tarjeta de cada imagen (recibe los datos por props)
+├── ImageCard       → tarjeta de cada imagen (recibe los datos por props)
 └── Footer          → créditos de la API
 ```
 

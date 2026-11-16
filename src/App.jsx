@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import Header from './components/Header.jsx'
 import SearchBar from './components/SearchBar.jsx'
-import CategoryFilter from './components/CategoryFilter.jsx'
 import Toolbar from './components/Toolbar.jsx'
-import Gallery from './components/Gallery.jsx'
-import Loader from './components/Loader.jsx'
+import ImageCard from './components/ImageCard.jsx'
 import Footer from './components/Footer.jsx'
 import './App.css'
 
@@ -89,14 +87,7 @@ function App() {
       <Header />
 
       <main className="container">
-        <section className="controls">
-          <SearchBar query={query} onSearch={setQuery} />
-          <CategoryFilter
-            categories={CATEGORIES}
-            activeQuery={query}
-            onSelect={setQuery}
-          />
-        </section>
+        <SearchBar query={query} categories={CATEGORIES} onSearch={setQuery} />
 
         <Toolbar
           query={query}
@@ -109,7 +100,14 @@ function App() {
           onClear={clearFilters}
         />
 
-        {loading && <Loader />}
+        {loading && (
+          <div className="loader">
+            <div className="loader-orbit">
+              <span className="loader-planet"></span>
+            </div>
+            <p>Cargando información de la NASA...</p>
+          </div>
+        )}
 
         {!loading && error !== '' && (
           <div className="message message-error">
@@ -127,7 +125,24 @@ function App() {
           </div>
         )}
 
-        {!loading && sortedItems.length > 0 && <Gallery items={sortedItems} />}
+        {/* Galería: una tarjeta por cada imagen que devolvió la API */}
+        {!loading && (
+          <section className="gallery">
+            {sortedItems.map((item) => (
+              <ImageCard
+                key={item.data[0].nasa_id}
+                title={item.data[0].title}
+                image={item.links[0].href}
+                date={item.data[0].date_created}
+                center={item.data[0].center}
+                description={item.data[0].description}
+                creator={item.data[0].photographer || item.data[0].secondary_creator}
+                keywords={item.data[0].keywords || []}
+                nasaId={item.data[0].nasa_id}
+              />
+            ))}
+          </section>
+        )}
       </main>
 
       <Footer />
